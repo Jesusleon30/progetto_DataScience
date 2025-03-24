@@ -1,60 +1,16 @@
+# texto-client/test.py
+
+from texto_analyzer.texto_analyzer import TextoAnalyzer
 import os
-import torch
-from transformers import T5TokenizerFast, T5ForConditionalGeneration
 
-class TextoAnalyzer:
-    
-    def __init__(self, model_path):
-        # Inicializar la ruta del modelo
-        self.model_path = model_path
+# Crear una instancia del analizador con la ruta del modelo
+model_path = "C:/Users/user/Documents/nuevo_modelo"  # Ruta donde está el modelo entrenado
+analyzer = TextoAnalyzer(model_path)
 
-        # Verificar si la ruta del modelo existe
-        if not os.path.exists(self.model_path):
-            raise ValueError(f"La ruta del modelo {self.model_path} no existe.")
-        
-        # Cargar el tokenizer y el modelo preentrenado desde la ruta especificada
-        self.tokenizer = T5TokenizerFast.from_pretrained(self.model_path)
-        self.model = T5ForConditionalGeneration.from_pretrained(self.model_path)
 
-        # Determinar el dispositivo (GPU si disponible, de lo contrario CPU)
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        self.model = self.model.to(self.device)  # Mover el modelo al dispositivo
-        
-        # Imprimir la ruta del modelo
-        print(f"Ruta del modelo: {self.model_path}")
-
-    def predict_texto(self, text):
-        # Tokenizar el texto de entrada
-        inputs = self.tokenizer(text, return_tensors="pt", truncation=True, padding=True, max_length=512)
-
-        # Obtener los ids de los tokens y la máscara de atención
-        input_ids = inputs["input_ids"].to(self.device)
-        attention_mask = inputs["attention_mask"].to(self.device)
-
-        # Generar el resumen utilizando el modelo
-        with torch.no_grad():
-            outputs = self.model.generate(input_ids=input_ids, attention_mask=attention_mask, max_length=150, num_beams=4, early_stopping=True)
-
-        # Decodificar el resumen generado
-        resumen = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
-        return resumen
-
-# Ejemplo de uso
-if __name__ == "__main__":
-    # Definir la ruta donde se guarda tu modelo entrenado
-    # model_path = os.path.join(os.path.dirname(__file__), "model") 
-    model_path = "C:/Users/user/Documents/nuevo_modelo"  # Ruta de tu modelo guardado
-
-    # Crear una instancia de TextoAnalyzer pasando la ruta del modelo
-    analyzer = TextoAnalyzer(model_path)
-
-    # Verificar si el objeto analyzer fue creado correctamente
-    if not hasattr(analyzer, 'tokenizer'):
-        print("Error: No se pudo cargar el modelo.")
-    else:
-        # Definir el texto a resumir
-        ARTICLE = """
-        ¿Qué es un robot?
+# Texto a resumir
+ARTICLE = """
+ ¿Qué es un robot?
         Un robot es una máquina diseñada para llevar a cabo una serie de tareas de manera autónoma o semiautónoma. Dependiendo de su diseño y función, los robots pueden estar equipados con sensores que les permiten interactuar con su entorno, procesadores que interpretan la información que reciben y actuadores que les permiten realizar movimientos físicos.
 
         Tipos de robots
@@ -84,16 +40,12 @@ if __name__ == "__main__":
 
         Conclusión
         La robótica está cambiando rápidamente el mundo en que vivimos. Si bien existen desafíos, como la pérdida de empleos y las preocupaciones éticas, los robots tienen el potencial de mejorar significativamente muchos aspectos de la vida humana. La clave estará en cómo los integremos de manera responsable en nuestra sociedad, asegurándonos de que su desarrollo beneficie a todos.
-        """
+...
+"""  # Coloca aquí el texto completo que deseas resumir
 
-        # Obtener el resumen del artículo
-        resumen = analyzer.predict_texto(ARTICLE)
+# Obtener el resumen del artículo
+resumen = analyzer.predict_texto(ARTICLE)
 
-        # Mostrar el resumen
-        print("Resumen del artículo:")
-        print(resumen)
-
-        # Imprimir la ruta del modelo desde el objeto analyzer
-        print(f"Ruta del modelo cargado: {analyzer.model_path}")
-
-
+# Mostrar el resumen
+print("Resumen del artículo:")
+print(resumen)
