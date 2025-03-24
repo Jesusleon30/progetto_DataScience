@@ -1,2 +1,5 @@
 venv
 model
+*egg-info
+dist
+build
